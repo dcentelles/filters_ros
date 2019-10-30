@@ -19,7 +19,7 @@ using namespace std::chrono_literals;
 
 int main(int argc, char **argv) {
   // TODO: MAKE THIS PARAMETRIZABLE
-  auto log = CreateLogger("GCS");
+  auto log = CreateLogger("tf_filter");
   log->SetLogLevel(debug);
   log->FlushLogOn(debug);
 
