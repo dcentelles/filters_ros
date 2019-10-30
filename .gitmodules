@@ -1,0 +1,12 @@
+[submodule "modules/cpputils"]
+	path = modules/cpputils
+	url = https://github.com/dcentelles/cpputils.git
+[submodule "modules/mavlink_cpp"]
+	path = modules/mavlink_cpp
+	url = https://github.com/dcentelles/mavlink_cpp.git
+[submodule "modules/control"]
+	path = modules/control
+	url = https://github.com/dcentelles/control.git
+[submodule "modules/cpplogging"]
+	path = modules/cpplogging
+	url = https://github.com/dcentelles/cpplogging.git
