@@ -83,49 +83,43 @@ ENDFOREACH()
 
 ######## END HANDLE DEPENDENCIES ######
 
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
-
-SET(SRCPATH ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-
 SET(${PROJECT_NAME}_INCLUDE_DIRS
-    ${catkin_INCLUDE_DIRS}
     ${${CPPUTILS_GIT}_INCLUDE_DIRS}
     ${${CPPLOGGING_GIT}_INCLUDE_DIRS}
     )
 
-
-## Add support for C++11, supported in ROS Kinetic and newer
-add_definitions(-fPIC -std=c++14)
-
-include_directories(
-  ${${PROJECT_NAME}_INCLUDE_DIRS}
-)
-
-add_executable(${PROJECT_NAME} ${SRCPATH}/tf_filter.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${CPPUTILS_GIT} ${CPPLOGGING_GIT})
-
-install(TARGETS ${PROJECT_NAME}
-        LIBRARY DESTINATION "lib"
-        RUNTIME DESTINATION "bin"
-        )
-install(DIRECTORY "${SRCPATH}/include/${PROJECT_NAME}" DESTINATION "include")
-
-
 catkin_package(
-   LIBRARIES
-    ${PROJECT_NAME}
-    ${${CPPUTILS_GIT}_LIBRARIES}
-    ${${CPPLOGGING_GIT}_LIBRARIES}
    INCLUDE_DIRS
     ${${PROJECT_NAME}_INCLUDE_DIRS}
+   LIBRARIES
+    ${${CPPUTILS_GIT}_LIBRARIES}
+    ${${CPPLOGGING_GIT}_LIBRARIES}
    CATKIN_DEPENDS
     roscpp
     rospy
     std_msgs
+    tf
     tf_conversions
 )
+
+## Add support for C++11, supported in ROS Kinetic and newer
+add_definitions(-fPIC -std=c++14)
+
+SET(SRCPATH ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${${PROJECT_NAME}_INCLUDE_DIRS}
+)
+
+add_executable(tf_filter ${SRCPATH}/tf_filter.cpp)
+target_link_libraries(tf_filter ${catkin_LIBRARIES} ${CPPUTILS_GIT} ${CPPLOGGING_GIT})
+
+install(TARGETS tf_filter
+        LIBRARY DESTINATION "lib"
+        RUNTIME DESTINATION "bin"
+        )
+#install(DIRECTORY "${SRCPATH}/include/${PROJECT_NAME}" DESTINATION "include")
+
 
 message(STATUS "End ${PROJECT_NAME}")
