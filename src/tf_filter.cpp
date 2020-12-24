@@ -17,6 +17,19 @@
 using namespace cpplogging;
 using namespace std::chrono_literals;
 
+typedef struct Params {
+    std::string world_frame = "world";
+
+    std::string reference_camera_frame = "bluerov2_camera";
+    std::string reference_rov_frame = "hil";
+
+    std::string unfiltered_camera_frame = "camera";
+    std::string unfiltered_rov_frame= "aruco_rov";
+
+    std::string filtered_rov_frame = "erov";
+} Params;
+
+
 int main(int argc, char **argv) {
   // TODO: MAKE THIS PARAMETRIZABLE
   auto log = CreateLogger("tf_filter");
@@ -24,7 +37,44 @@ int main(int argc, char **argv) {
   log->FlushLogOn(debug);
 
   ros::init(argc, argv, "tf_filter");
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
+  Params params;
+
+  if (!nh.param("reference_camera_frame", params.reference_camera_frame, params.reference_camera_frame)) {
+      log->Info("reference_camera_frame set to default => {}", params.reference_camera_frame);
+  } else {
+      log->Info("reference_camera_frame: {}", params.reference_camera_frame);
+  }
+
+  if (!nh.param("reference_rov_frame", params.reference_rov_frame, params.reference_rov_frame)) {
+      log->Info("reference_rov_frame set to default => {}", params.reference_rov_frame);
+  } else {
+      log->Info("reference_rov_frame: {}", params.reference_rov_frame);
+  }
+
+  if (!nh.param("world_frame", params.world_frame, params.world_frame)) {
+      log->Info("world_frame set to default => {}", params.world_frame);
+  } else {
+      log->Info("world_frame: {}", params.world_frame);
+  }
+
+  if (!nh.param("unfiltered_camera_frame", params.unfiltered_camera_frame, params.unfiltered_camera_frame)) {
+      log->Info("unfiltered_camera_frame set to default => {}", params.unfiltered_camera_frame);
+  } else {
+      log->Info("unfiltered_camera_frame: {}", params.unfiltered_camera_frame);
+  }
+
+  if (!nh.param("unfiltered_rov_frame", params.unfiltered_rov_frame, params.unfiltered_rov_frame)) {
+      log->Info("unfiltered_rov_frame set to default => {}", params.unfiltered_rov_frame);
+  } else {
+      log->Info("unfiltered_rov_frame: {}", params.unfiltered_rov_frame);
+  }
+
+  if (!nh.param("filtered_rov_frame", params.filtered_rov_frame, params.filtered_rov_frame)) {
+      log->Info("filtered_rov_frame set to default => {}", params.filtered_rov_frame);
+  } else {
+      log->Info("filtered_rov_frame: {}", params.filtered_rov_frame);
+  }
 
   tf::TransformListener listener;
   tf::TransformBroadcaster tfBroadcaster;
@@ -36,11 +86,11 @@ int main(int argc, char **argv) {
   ros::Rate rate(30);
   while (ros::ok()) {
     try {
-      listener.lookupTransform("bluerov2_camera", "hil", ros::Time(0),
+      listener.lookupTransform(params.reference_camera_frame, params.reference_rov_frame, ros::Time(0),
                                cameraMrov);
       static_transformStamped.header.stamp = ros::Time::now();
-      static_transformStamped.header.frame_id = "camera";
-      static_transformStamped.child_frame_id = "aruco_rov";
+      static_transformStamped.header.frame_id = params.unfiltered_camera_frame;
+      static_transformStamped.child_frame_id = params.unfiltered_rov_frame;
       static_transformStamped.transform.translation.x =
           cameraMrov.getOrigin().getX();
       static_transformStamped.transform.translation.y =
@@ -79,7 +129,7 @@ int main(int argc, char **argv) {
   bool first = true;
   while (ros::ok()) {
     try {
-      listener.lookupTransform("world", "aruco_rov", ros::Time(0), wMrov);
+      listener.lookupTransform(params.world_frame, params.unfiltered_rov_frame, ros::Time(0), wMrov);
     } catch (tf::TransformException &ex) {
       log->Warn("TF: {}", ex.what());
       std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -127,7 +177,7 @@ int main(int argc, char **argv) {
     wMrov.setRotation(wRrov.normalize());
 
     tfBroadcaster.sendTransform(
-        tf::StampedTransform(wMrov, ros::Time::now(), "world", "erov"));
+        tf::StampedTransform(wMrov, ros::Time::now(), params.world_frame, params.filtered_rov_frame));
 
     ros::spinOnce();
   }
